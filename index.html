@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>QR Code com Logo — SVG/PNG</title>
+<title>QR Code com Imagem — SVG/PNG</title>
 <style>
   :root { --bg:#0f172a; --muted:#94a3b8; --fg:#e5e7eb; --lgt:#94a3b880; --accent:#22c55e; --accent-fg:#04150a; }
   * { box-sizing: border-box; }
@@ -66,9 +66,16 @@
 
   .whatsapp-preview {
     margin-top:10px; padding:10px 12px; background:#0b1222; border:1px solid rgba(255,255,255,.1);
-    border-radius:10px; font-size:12.5px; color:var(--muted); word-break:break-all;
+    border-radius:10px; font-size:12.5px; color:var(--muted);
   }
-  .whatsapp-preview b { color: var(--fg); }
+  .whatsapp-preview b { color: var(--fg); display:block; margin-bottom:6px; }
+  .wa-url-row { display:flex; align-items:center; gap:8px; }
+  .wa-url-text {
+    flex:1; word-break:break-all; cursor:pointer; padding:6px 8px; border-radius:8px;
+    border:1px dashed transparent; transition: border-color .15s, background .15s;
+  }
+  .wa-url-text:hover { border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.03); }
+  .wa-copy-btn { flex-shrink:0; padding:6px 12px; font-size:12.5px; }
   .hidden { display:none !important; }
 </style>
 </head>
@@ -76,7 +83,7 @@
   <div class="wrap">
     <div class="card">
       <h1>Gerador de QR Code</h1>
-      <p class="subtitle">Crie QR Codes personalizados com logo a partir de um link ou de uma conversa do WhatsApp.</p>
+      <p class="subtitle">Crie QR Codes personalizados com imagem a partir de um link ou de uma conversa do WhatsApp.</p>
       <div class="grid">
         <section>
 
@@ -105,7 +112,13 @@
                   <textarea id="waMessage" placeholder="Olá! Gostaria de mais informações."></textarea>
                 </div>
               </div>
-              <div class="whatsapp-preview" id="waPreview"><b>URL gerada:</b> —</div>
+              <div class="whatsapp-preview">
+                <b>URL gerada (clique para copiar):</b>
+                <div class="wa-url-row">
+                  <span id="waUrlText" class="wa-url-text" title="Clique para copiar">—</span>
+                  <button type="button" id="waCopyBtn" class="btn wa-copy-btn" disabled>Copiar</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -124,7 +137,7 @@
                 <small class="hint">Espessura da borda.</small>
               </div>
               <div>
-                <label for="outerRadius">Raio da imagem (px)</label>
+                <label for="outerRadius">Raio do QR Code (px)</label>
                 <input id="outerRadius" type="number" min="0" max="999" value="50">
                 <small class="hint">Arredondamento da borda.</small>
               </div>
@@ -154,19 +167,19 @@
           </div>
 
           <div class="section">
-            <p class="section-title">Logotipo</p>
+            <p class="section-title">Imagem</p>
 
             <div class="row-main">
               <div>
-                <label for="logoFile">Logo central (PNG/JPG/SVG)</label>
+                <label for="logoFile">Imagem central (PNG/JPG/SVG)</label>
                 <input id="logoFile" type="file" accept="image/png,image/jpeg,image/svg+xml">
               </div>
               <div style="display:flex; align-items:flex-end;">
-                <button id="clearLogo" class="btn hidden" style="width:100%;">Remover logo</button>
+                <button id="clearLogo" class="btn hidden" style="width:100%;">Remover imagem</button>
               </div>
             </div>
 
-            <small class="hint" id="logoEmptyHint">Envie uma imagem para ver mais opções.</small>
+            <small class="hint" id="logoEmptyHint">Envie uma imagem para liberar as opções de tamanho, margem e arredondamento.</small>
 
             <div id="logoExtra" class="hidden">
               <div class="row" style="margin-top:12px;">
@@ -237,7 +250,8 @@
       tabWhatsPanel: document.getElementById('tabWhatsPanel'),
       waPhone: document.getElementById('waPhone'),
       waMessage: document.getElementById('waMessage'),
-      waPreview: document.getElementById('waPreview'),
+      waUrlText: document.getElementById('waUrlText'),
+      waCopyBtn: document.getElementById('waCopyBtn'),
       text: document.getElementById('text'),
       size: document.getElementById('size'),
       margin: document.getElementById('margin'),
@@ -313,7 +327,39 @@
 
     function updateWaPreview(){
       const url = buildWaUrl();
-      el.waPreview.innerHTML = '<b>URL gerada:</b> ' + (url || '—');
+      el.waUrlText.textContent = url || '—';
+      el.waCopyBtn.disabled = !url;
+    }
+
+    async function copyTextToClipboard(str){
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try { await navigator.clipboard.writeText(str); return true; } catch (err) { /* fallback abaixo */ }
+      }
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = str;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        return ok;
+      } catch (err) {
+        console.error(err);
+        return false;
+      }
+    }
+
+    async function copyWaUrl(){
+      const url = buildWaUrl();
+      if (!url) return;
+      const ok = await copyTextToClipboard(url);
+      const original = el.waCopyBtn.textContent;
+      el.waCopyBtn.textContent = ok ? 'Copiado!' : 'Falhou';
+      setTimeout(() => { el.waCopyBtn.textContent = original; }, 1200);
+      if (!ok) alert('Não foi possível copiar automaticamente. Selecione e copie a URL manualmente.');
     }
 
     function getContentText(){
@@ -558,6 +604,8 @@
     el.tabWhatsBtn.addEventListener('click', () => setMode('whatsapp'));
     el.waPhone.addEventListener('input', () => { updateWaPreview(); renderQRDebounced(); });
     el.waMessage.addEventListener('input', () => { updateWaPreview(); renderQRDebounced(); });
+    el.waUrlText.addEventListener('click', copyWaUrl);
+    el.waCopyBtn.addEventListener('click', copyWaUrl);
 
     // Atualizações em tempo real
     [
