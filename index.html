@@ -5,149 +5,216 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>QR Code com Logo — SVG/PNG</title>
 <style>
-  :root { --bg:#0f172a; --muted:#94a3b8; --fg:#e5e7eb; --lgt:#94a3b880}
+  :root { --bg:#0f172a; --muted:#94a3b8; --fg:#e5e7eb; --lgt:#94a3b880; --accent:#22c55e; --accent-fg:#04150a; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:linear-gradient(120deg,#0b1224,#0f172a); color:var(--fg); }
-  .wrap { max-width: 1060px; margin: 40px auto; padding: 24px; }
-  .card { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-  h1 { margin: 0 0 12px; font-size: clamp(22px, 3vw, 28px); font-weight: 700; letter-spacing: .3px; }
-  .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; }
+  .wrap { max-width: 1120px; margin: 40px auto; padding: 24px; }
+  .card { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  h1 { margin: 0 0 4px; font-size: clamp(22px, 3vw, 28px); font-weight: 700; letter-spacing: .3px; }
+  p.subtitle { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+  .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:24px; align-items:start; }
   @media (max-width:980px){ .grid { grid-template-columns: 1fr; } }
   label { font-size: 13px; color: var(--muted); display:block; margin-bottom:6px; }
-  input[type="text"], input[type="number"], select, input[type="range"] {
+  input[type="text"], input[type="number"], input[type="tel"], select, input[type="range"], textarea {
     width:100%; border:1px solid rgba(255,255,255,.12); background:#0b1222;
     color:var(--fg); padding:10px 12px; border-radius:10px; outline:none;
+    font-family: inherit; font-size: 14px;
+  }
+  textarea { resize: vertical; min-height: 72px; }
+  input[type="text"]:focus, input[type="number"]:focus, input[type="tel"]:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
   }
   input[type="color"] { width:100%; height:40px; border:none; background:transparent; padding:0; }
   input[type="file"] { width:100%; }
   .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
   .row-main { display:grid; grid-template-columns: 2fr 1fr; gap:12px; }
   .row-3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+  @media (max-width:520px){ .row, .row-main, .row-3 { grid-template-columns: 1fr; } }
   .btn {
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
     border:1px solid rgba(255,255,255,.12); background:#0c162c;
     color:var(--fg); padding:10px 14px; border-radius: 10px;
-    cursor:pointer; font-weight:600; text-decoration:none;
+    cursor:pointer; font-weight:600; text-decoration:none; font-size:14px;
   }
   .btn:disabled { opacity:.5; cursor:not-allowed; }
   .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
   .preview-card {
     display:flex; align-items:center; justify-content:center;
     background:#0b1222; border:1px dashed rgba(255,255,255,.14);
-    border-radius:14px; min-height: 340px; padding:16px;
+    border-radius:14px; min-height: 340px; padding:16px; position:sticky; top:24px;
   }
   #svgBox svg, #svgBox canvas { max-width:100%; height:auto; display:block; }
   small.hint { color: var(--lgt); display:block; margin-top:6px; }
   .inline { display:flex; align-items:center; gap:10px; }
   .inline label { margin:0; }
+
+  .section-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin: 0 0 12px; display:flex; align-items:center; gap:8px;
+  }
+  .section-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.08); }
+  .section + .section { margin-top: 22px; }
+
+  .tabs { display:flex; gap:8px; background:#0b1222; border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:4px; margin-bottom:16px; }
+  .tab-btn {
+    flex:1; border:none; background:transparent; color:var(--muted); padding:10px 12px;
+    border-radius:9px; cursor:pointer; font-weight:600; font-size:13.5px; transition: background .15s, color .15s;
+  }
+  .tab-btn.active { background: var(--accent); color: var(--accent-fg); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .whatsapp-preview {
+    margin-top:10px; padding:10px 12px; background:#0b1222; border:1px solid rgba(255,255,255,.1);
+    border-radius:10px; font-size:12.5px; color:var(--muted); word-break:break-all;
+  }
+  .whatsapp-preview b { color: var(--fg); }
+  .hidden { display:none !important; }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>Gerador de QR Code</h1>
+      <p class="subtitle">Crie QR Codes personalizados com logo a partir de um link ou de uma conversa do WhatsApp.</p>
       <div class="grid">
         <section>
-          <div class="row-main">
-            <div>
+
+          <div class="section">
+            <p class="section-title">Conteúdo</p>
+
+            <div class="tabs" role="tablist">
+              <button type="button" class="tab-btn active" id="tabLinkBtn" role="tab" aria-selected="true">🔗 Link ou texto</button>
+              <button type="button" class="tab-btn" id="tabWhatsBtn" role="tab" aria-selected="false">💬 WhatsApp (telefone + mensagem)</button>
+            </div>
+
+            <div id="tabLinkPanel" class="tab-panel active">
               <label for="text">Link ou texto</label>
               <input id="text" type="text" placeholder="https://exemplo.com" value="https://ensin-e.edu.br/">
             </div>
-			<div>
-              <label for="ecLevel">Correção de erro</label>
-              <select id="ecLevel">
-                <option value="M">M (15%)</option>
-                <option value="L">L (7%)</option>
-                <option value="Q">Q (25%)</option>
-                <option value="H">H (30%)</option>
-              </select>
+
+            <div id="tabWhatsPanel" class="tab-panel">
+              <div class="row">
+                <div>
+                  <label for="waPhone">Telefone (com DDI e DDD)</label>
+                  <input id="waPhone" type="tel" placeholder="5511999999999" inputmode="numeric">
+                  <small class="hint">Somente números, com código do país. Ex.: 55 (Brasil) + DDD + número.</small>
+                </div>
+                <div>
+                  <label for="waMessage">Mensagem</label>
+                  <textarea id="waMessage" placeholder="Olá! Gostaria de mais informações."></textarea>
+                </div>
+              </div>
+              <div class="whatsapp-preview" id="waPreview"><b>URL gerada:</b> —</div>
             </div>
           </div>
 
-          <div class="row-3" style="margin-top:12px;">
-            <div>
-              <label for="size">Tamanho (px)</label>
-              <input id="size" type="number" min="64" max="2048" step="16" value="512">
-			  <small class="hint">Tamanho da imagem.</small>
+          <div class="section">
+            <p class="section-title">Aparência</p>
+
+            <div class="row-3">
+              <div>
+                <label for="size">Tamanho (px)</label>
+                <input id="size" type="number" min="64" max="2048" step="16" value="512">
+                <small class="hint">Tamanho da imagem.</small>
+              </div>
+              <div>
+                <label for="margin">Margem</label>
+                <input id="margin" type="number" min="0" max="16" step="1" value="2">
+                <small class="hint">Espessura da borda.</small>
+              </div>
+              <div>
+                <label for="outerRadius">Raio da imagem (px)</label>
+                <input id="outerRadius" type="number" min="0" max="999" value="50">
+                <small class="hint">Arredondamento da borda.</small>
+              </div>
             </div>
-			<div>
-              <label for="margin">Margem</label>
-              <input id="margin" type="number" min="0" max="16" step="1" value="2">
-              <small class="hint">Espessura da borda.</small>
-            </div>
-			<div>
-              <label for="outerRadius">Raio da imagem (px)</label>
-              <input id="outerRadius" type="number" min="0" max="999" value="50">
-              <small class="hint">Arredondamento da borda.</small>
+
+            <div class="row" style="margin-top:12px;">
+              <div>
+                <label for="ecLevel">Correção de erro</label>
+                <select id="ecLevel">
+                  <option value="M">M (15%)</option>
+                  <option value="L">L (7%)</option>
+                  <option value="Q">Q (25%)</option>
+                  <option value="H">H (30%)</option>
+                </select>
+              </div>
+              <div class="row" style="margin-top:0;">
+                <div>
+                  <label for="fg">Cor dos módulos</label>
+                  <input id="fg" type="color" value="#000000">
+                </div>
+                <div>
+                  <label for="bg">Fundo</label>
+                  <input id="bg" type="color" value="#ffffff">
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="row" style="margin-top:12px;">
-            <div>
-              <label for="fg">Cor dos módulos</label>
-              <input id="fg" type="color" value="#000000">
+          <div class="section">
+            <p class="section-title">Logotipo</p>
+
+            <div class="row-main">
+              <div>
+                <label for="logoFile">Logo central (PNG/JPG/SVG)</label>
+                <input id="logoFile" type="file" accept="image/png,image/jpeg,image/svg+xml">
+              </div>
+              <div style="display:flex; align-items:flex-end;">
+                <button id="clearLogo" class="btn hidden" style="width:100%;">Remover logo</button>
+              </div>
             </div>
-            <div>
-              <label for="bg">Fundo</label>
-              <input id="bg" type="color" value="#ffffff">
+
+            <small class="hint" id="logoEmptyHint">Envie uma imagem para liberar as opções de tamanho, margem e arredondamento do logo.</small>
+
+            <div id="logoExtra" class="hidden">
+              <div class="row" style="margin-top:12px;">
+                <div>
+                  <label for="logoSize">Tamanho do logo (%)</label>
+                  <input id="logoSize" type="number" min="10" max="40" value="20">
+                  <small class="hint" id="logoSizeLabel">Ajuste a correção de erro se necessário</small>
+                </div>
+                <div>
+                  <label for="logoImgRadius">Raio do logo (px)</label>
+                  <input id="logoImgRadius" type="number" min="0" max="999" value="20">
+                  <small class="hint">Arredondamento do logo.</small>
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:12px;">
+                <div>
+                  <label for="logoPad">Margem do logo (px)</label>
+                  <input id="logoPad" type="number" min="0" max="64" value="11">
+                  <small class="hint">Espessura da borda do logo.</small>
+                </div>
+                <div>
+                  <label for="logoRadius">Raio da margem do logo (px)</label>
+                  <input id="logoRadius" type="number" min="0" max="999" value="0">
+                  <small class="hint">Arredondamento da borda do logo.</small>
+                </div>
+              </div>
+
+              <div class="row" style="margin-top:12px;">
+                <div>
+                  <label for="logoBg">Cor do fundo do logo</label>
+                  <input id="logoBg" type="color" value="#ffffff">
+                </div>
+                <div class="inline" style="margin-top:22px;">
+                  <input id="logoBgEnable" type="checkbox" checked>
+                  <label for="logoBgEnable">Usar fundo atrás do logo (recomendado)</label>
+                </div>
+              </div>
             </div>
           </div>
 
-          <hr style="border-color: rgba(255,255,255,.08); margin:16px 0;">
-
-          <div class="row-main">
-            <div>
-              <label for="logoFile">Logo central (PNG/JPG/SVG)</label>
-              <input id="logoFile" type="file" accept="image/png,image/jpeg,image/svg+xml">
+          <div class="section">
+            <p class="section-title">Exportar</p>
+            <div class="actions" style="margin-top:0;">
+              <button id="downloadSvg" class="btn" disabled>Baixar SVG</button>
+              <button id="downloadPng" class="btn" disabled>Baixar PNG</button>
+              <button id="copyPng" class="btn" disabled>Copiar para área de transferência</button>
             </div>
-			<div>
-			  <button id="clearLogo" class="btn" style="float: right">Remover logo</button>
-			</div>
-          </div>
-
-          <div class="row" style="margin-top:12px;">
-			<div>
-              <label for="logoSize">Tamanho do logo (%)</label>
-              <input id="logoSize" type="number" min="10" max="40" value="20">
-              <small class="hint" id="logoSizeLabel">Ajuste a correção de erro se necessário</small>
-			</div>
-			<div>
-              <label for="logoImgRadius">Raio do logo (px)</label>
-              <input id="logoImgRadius" type="number" min="0" max="999" value="20">
-              <small class="hint">Arredondamento do logo.</small>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:12px;">
-			<div>
-              <label for="logoPad">Margem do logo (px)</label>
-              <input id="logoPad" type="number" min="0" max="64" value="11">
-			  <small class="hint">Espessura da borda do logo.</small>
-            </div>
-			<div>
-              <label for="logoRadius">Raio da margem do logo (px)</label>
-              <input id="logoRadius" type="number" min="0" max="999" value="0">
-			  <small class="hint">Arredondamento da borda do logo.</small>
-            </div>
-          </div>
-
-          <div class="row" style="margin-top:10px;">
-		  	<div>
-              <label for="logoBg">Cor do fundo do logo</label>
-              <input id="logoBg" type="color" value="#ffffff">
-            </div>
-			<div class="inline">
-				<input id="logoBgEnable" type="checkbox" checked>
-				<label for="logoBgEnable">Usar fundo atrás do logo (recomendado)</label>
-			</div>
-          </div>
-		  
-		  <hr style="border-color: rgba(255,255,255,.08); margin:16px 0;">
-
-          <div class="actions">
-            <button id="downloadSvg" class="btn" disabled>Baixar SVG</button>
-            <button id="downloadPng" class="btn" disabled>Baixar PNG</button>
-            <button id="copyPng" class="btn" disabled>Copiar para área de transferência</button>
           </div>
         </section>
 
@@ -164,6 +231,13 @@
     import QRCode from "https://esm.sh/qrcode@1.5.3";
 
     const el = {
+      tabLinkBtn: document.getElementById('tabLinkBtn'),
+      tabWhatsBtn: document.getElementById('tabWhatsBtn'),
+      tabLinkPanel: document.getElementById('tabLinkPanel'),
+      tabWhatsPanel: document.getElementById('tabWhatsPanel'),
+      waPhone: document.getElementById('waPhone'),
+      waMessage: document.getElementById('waMessage'),
+      waPreview: document.getElementById('waPreview'),
       text: document.getElementById('text'),
       size: document.getElementById('size'),
       margin: document.getElementById('margin'),
@@ -180,6 +254,8 @@
       logoImgRadius: document.getElementById('logoImgRadius'),
       outerRadius: document.getElementById('outerRadius'),
       clearLogo: document.getElementById('clearLogo'),
+      logoExtra: document.getElementById('logoExtra'),
+      logoEmptyHint: document.getElementById('logoEmptyHint'),
       downloadSvg: document.getElementById('downloadSvg'),
       downloadPng: document.getElementById('downloadPng'),
       copyPng: document.getElementById('copyPng'),
@@ -189,6 +265,7 @@
     let lastSVG = '';
     let lastPNGDataURL = '';
     let logo = { dataURL: null, img: null };
+    let mode = 'link'; // 'link' | 'whatsapp'
 
     const debounce = (fn, d=120)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), d);} };
     const clamp = (n,min,max)=> Math.max(min, Math.min(max, n));
@@ -225,8 +302,38 @@
 
     const imgReady = (img)=> new Promise(res=>{ if(img.complete) return res(); img.onload=res; img.onerror=res; });
 
+    function buildWaUrl(){
+      const digits = (el.waPhone.value || '').replace(/\D/g, '');
+      const msg = el.waMessage.value || '';
+      if (!digits) return '';
+      let url = `https://wa.me/${digits}`;
+      if (msg.trim()) url += `?text=${encodeURIComponent(msg)}`;
+      return url;
+    }
+
+    function updateWaPreview(){
+      const url = buildWaUrl();
+      el.waPreview.innerHTML = '<b>URL gerada:</b> ' + (url || '—');
+    }
+
+    function getContentText(){
+      return mode === 'whatsapp' ? buildWaUrl().trim() : el.text.value.trim();
+    }
+
+    function setMode(newMode){
+      mode = newMode;
+      const isLink = mode === 'link';
+      el.tabLinkBtn.classList.toggle('active', isLink);
+      el.tabWhatsBtn.classList.toggle('active', !isLink);
+      el.tabLinkBtn.setAttribute('aria-selected', String(isLink));
+      el.tabWhatsBtn.setAttribute('aria-selected', String(!isLink));
+      el.tabLinkPanel.classList.toggle('active', isLink);
+      el.tabWhatsPanel.classList.toggle('active', !isLink);
+      renderQRDebounced();
+    }
+
     async function renderQR() {
-      const text = el.text.value.trim();
+      const text = getContentText();
       const size = clamp(parseInt(el.size.value || 512, 10), 64, 2048);
       const margin = clamp(parseInt(el.margin.value || 4, 10), 0, 32);
       const colorDark = el.fg.value || '#000000';
@@ -234,7 +341,9 @@
       const errorCorrectionLevel = el.ecLevel.value || 'M';
 
       if (!text) {
-        el.box.textContent='Informe um link ou texto.';
+        el.box.textContent = mode === 'whatsapp'
+          ? 'Informe o telefone para gerar o QR Code do WhatsApp.'
+          : 'Informe um link ou texto.';
         el.downloadSvg.disabled=true;
         el.downloadPng.disabled=true;
         el.copyPng.disabled=true;
@@ -416,15 +525,21 @@
 
     const renderQRDebounced = debounce(()=>{ renderQR().catch(console.error); }, 120);
 
+    function toggleLogoExtra(hasLogo) {
+      el.logoExtra.classList.toggle('hidden', !hasLogo);
+      el.logoEmptyHint.classList.toggle('hidden', hasLogo);
+      el.clearLogo.classList.toggle('hidden', !hasLogo);
+    }
+
     // Upload do logo
     el.logoFile.addEventListener('change', async (e) => {
       const f = e.target.files && e.target.files[0];
-      if (!f) { logo = { dataURL:null, img:null }; renderQRDebounced(); return; }
+      if (!f) { logo = { dataURL:null, img:null }; toggleLogoExtra(false); renderQRDebounced(); return; }
       const reader = new FileReader();
       reader.onload = () => {
         const dataURL = reader.result;
         const img = new Image();
-        img.onload = () => { logo = { dataURL, img }; renderQRDebounced(); };
+        img.onload = () => { logo = { dataURL, img }; toggleLogoExtra(true); renderQRDebounced(); };
         img.src = dataURL;
       };
       reader.readAsDataURL(f);
@@ -434,8 +549,15 @@
     el.clearLogo.addEventListener('click', () => {
       el.logoFile.value = '';
       logo = { dataURL:null, img:null };
+      toggleLogoExtra(false);
       renderQRDebounced();
     });
+
+    // Abas de conteúdo (Link/Texto x WhatsApp)
+    el.tabLinkBtn.addEventListener('click', () => setMode('link'));
+    el.tabWhatsBtn.addEventListener('click', () => setMode('whatsapp'));
+    el.waPhone.addEventListener('input', () => { updateWaPreview(); renderQRDebounced(); });
+    el.waMessage.addEventListener('input', () => { updateWaPreview(); renderQRDebounced(); });
 
     // Atualizações em tempo real
     [
