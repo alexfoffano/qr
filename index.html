@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QR Code com Logo — SVG/PNG</title>
+<style>
+  :root { --bg:#0f172a; --muted:#94a3b8; --fg:#e5e7eb; --lgt:#94a3b880}
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:linear-gradient(120deg,#0b1224,#0f172a); color:var(--fg); }
+  .wrap { max-width: 1060px; margin: 40px auto; padding: 24px; }
+  .card { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  h1 { margin: 0 0 12px; font-size: clamp(22px, 3vw, 28px); font-weight: 700; letter-spacing: .3px; }
+  .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; }
+  @media (max-width:980px){ .grid { grid-template-columns: 1fr; } }
+  label { font-size: 13px; color: var(--muted); display:block; margin-bottom:6px; }
+  input[type="text"], input[type="number"], select, input[type="range"] {
+    width:100%; border:1px solid rgba(255,255,255,.12); background:#0b1222;
+    color:var(--fg); padding:10px 12px; border-radius:10px; outline:none;
+  }
+  input[type="color"] { width:100%; height:40px; border:none; background:transparent; padding:0; }
+  input[type="file"] { width:100%; }
+  .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .row-main { display:grid; grid-template-columns: 2fr 1fr; gap:12px; }
+  .row-3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border:1px solid rgba(255,255,255,.12); background:#0c162c;
+    color:var(--fg); padding:10px 14px; border-radius: 10px;
+    cursor:pointer; font-weight:600; text-decoration:none;
+  }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+  .preview-card {
+    display:flex; align-items:center; justify-content:center;
+    background:#0b1222; border:1px dashed rgba(255,255,255,.14);
+    border-radius:14px; min-height: 340px; padding:16px;
+  }
+  #svgBox svg, #svgBox canvas { max-width:100%; height:auto; display:block; }
+  small.hint { color: var(--lgt); display:block; margin-top:6px; }
+  .inline { display:flex; align-items:center; gap:10px; }
+  .inline label { margin:0; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Gerador de QR Code</h1>
+      <div class="grid">
+        <section>
+          <div class="row-main">
+            <div>
+              <label for="text">Link ou texto</label>
+              <input id="text" type="text" placeholder="https://exemplo.com" value="https://ensin-e.edu.br/">
+            </div>
+			<div>
+              <label for="ecLevel">Correção de erro</label>
+              <select id="ecLevel">
+                <option value="M">M (15%)</option>
+                <option value="L">L (7%)</option>
+                <option value="Q">Q (25%)</option>
+                <option value="H">H (30%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row-3" style="margin-top:12px;">
+            <div>
+              <label for="size">Tamanho (px)</label>
+              <input id="size" type="number" min="64" max="2048" step="16" value="512">
+			  <small class="hint">Tamanho da imagem.</small>
+            </div>
+			<div>
+              <label for="margin">Margem</label>
+              <input id="margin" type="number" min="0" max="16" step="1" value="2">
+              <small class="hint">Espessura da borda.</small>
+            </div>
+			<div>
+              <label for="outerRadius">Raio da imagem (px)</label>
+              <input id="outerRadius" type="number" min="0" max="999" value="50">
+              <small class="hint">Arredondamento da borda.</small>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <div>
+              <label for="fg">Cor dos módulos</label>
+              <input id="fg" type="color" value="#000000">
+            </div>
+            <div>
+              <label for="bg">Fundo</label>
+              <input id="bg" type="color" value="#ffffff">
+            </div>
+          </div>
+
+          <hr style="border-color: rgba(255,255,255,.08); margin:16px 0;">
+
+          <div class="row-main">
+            <div>
+              <label for="logoFile">Logo central (PNG/JPG/SVG)</label>
+              <input id="logoFile" type="file" accept="image/png,image/jpeg,image/svg+xml">
+            </div>
+			<div>
+			  <button id="clearLogo" class="btn" style="float: right">Remover logo</button>
+			</div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+			<div>
+              <label for="logoSize">Tamanho do logo (%)</label>
+              <input id="logoSize" type="number" min="10" max="40" value="20">
+              <small class="hint" id="logoSizeLabel">Ajuste a correção de erro se necessário</small>
+			</div>
+			<div>
+              <label for="logoImgRadius">Raio do logo (px)</label>
+              <input id="logoImgRadius" type="number" min="0" max="999" value="20">
+              <small class="hint">Arredondamento do logo.</small>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+			<div>
+              <label for="logoPad">Margem do logo (px)</label>
+              <input id="logoPad" type="number" min="0" max="64" value="11">
+			  <small class="hint">Espessura da borda do logo.</small>
+            </div>
+			<div>
+              <label for="logoRadius">Raio da margem do logo (px)</label>
+              <input id="logoRadius" type="number" min="0" max="999" value="0">
+			  <small class="hint">Arredondamento da borda do logo.</small>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+		  	<div>
+              <label for="logoBg">Cor do fundo do logo</label>
+              <input id="logoBg" type="color" value="#ffffff">
+            </div>
+			<div class="inline">
+				<input id="logoBgEnable" type="checkbox" checked>
+				<label for="logoBgEnable">Usar fundo atrás do logo (recomendado)</label>
+			</div>
+          </div>
+		  
+		  <hr style="border-color: rgba(255,255,255,.08); margin:16px 0;">
+
+          <div class="actions">
+            <button id="downloadSvg" class="btn" disabled>Baixar SVG</button>
+            <button id="downloadPng" class="btn" disabled>Baixar PNG</button>
+            <button id="copyPng" class="btn" disabled>Copiar para área de transferência</button>
+          </div>
+        </section>
+
+        <section>
+          <div class="preview-card">
+            <div id="svgBox" aria-live="polite">Prévia aparecerá aqui</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import QRCode from "https://esm.sh/qrcode@1.5.3";
+
+    const el = {
+      text: document.getElementById('text'),
+      size: document.getElementById('size'),
+      margin: document.getElementById('margin'),
+      ecLevel: document.getElementById('ecLevel'),
+      fg: document.getElementById('fg'),
+      bg: document.getElementById('bg'),
+      logoFile: document.getElementById('logoFile'),
+      logoSize: document.getElementById('logoSize'),
+      logoSizeLabel: document.getElementById('logoSizeLabel'),
+      logoPad: document.getElementById('logoPad'),
+      logoRadius: document.getElementById('logoRadius'),
+      logoBg: document.getElementById('logoBg'),
+      logoBgEnable: document.getElementById('logoBgEnable'),
+      logoImgRadius: document.getElementById('logoImgRadius'),
+      outerRadius: document.getElementById('outerRadius'),
+      clearLogo: document.getElementById('clearLogo'),
+      downloadSvg: document.getElementById('downloadSvg'),
+      downloadPng: document.getElementById('downloadPng'),
+      copyPng: document.getElementById('copyPng'),
+      box: document.getElementById('svgBox')
+    };
+
+    let lastSVG = '';
+    let lastPNGDataURL = '';
+    let logo = { dataURL: null, img: null };
+
+    const debounce = (fn, d=120)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), d);} };
+    const clamp = (n,min,max)=> Math.max(min, Math.min(max, n));
+    const ensureXMLHeader = (s)=> /^<\?xml/.test(s)? s : '<?xml version="1.0" encoding="UTF-8"?>\n'+s;
+
+    function download(filename, dataURLorBlob){
+      const a = document.createElement('a');
+      if (typeof dataURLorBlob === 'string' && dataURLorBlob.startsWith('data:')) a.href = dataURLorBlob;
+      else {
+        const url = URL.createObjectURL(dataURLorBlob);
+        a.href = url;
+        a.addEventListener('click',()=>setTimeout(()=>URL.revokeObjectURL(url),2000),{once:true});
+      }
+      a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    function serializeCurrentSVG(){
+      const svg = el.box.querySelector('svg'); if(!svg) return null;
+      const serializer = new XMLSerializer(); let source = serializer.serializeToString(svg);
+      if(!/^<\?xml/.test(source)) source = '<?xml version="1.0" encoding="UTF-8"?>' + source;
+      return source;
+    }
+
+    function drawRoundedRect(ctx, x, y, w, h, r){
+      r = Math.max(0, Math.min(r, Math.min(w, h)/2));
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.arcTo(x+w, y, x+w, y+h, r);
+      ctx.arcTo(x+w, y+h, x, y+h, r);
+      ctx.arcTo(x, y+h, x, y, r);
+      ctx.arcTo(x, y, x+w, y, r);
+      ctx.closePath();
+    }
+
+    const imgReady = (img)=> new Promise(res=>{ if(img.complete) return res(); img.onload=res; img.onerror=res; });
+
+    async function renderQR() {
+      const text = el.text.value.trim();
+      const size = clamp(parseInt(el.size.value || 512, 10), 64, 2048);
+      const margin = clamp(parseInt(el.margin.value || 4, 10), 0, 32);
+      const colorDark = el.fg.value || '#000000';
+      const colorLight = el.bg.value || '#ffffff';
+      const errorCorrectionLevel = el.ecLevel.value || 'M';
+
+      if (!text) {
+        el.box.textContent='Informe um link ou texto.';
+        el.downloadSvg.disabled=true;
+        el.downloadPng.disabled=true;
+        el.copyPng.disabled=true;
+        return;
+      }
+
+      // 1) QR em SVG
+      const rawSVG = await QRCode.toString(text, {
+        type: 'svg',
+        margin,
+        errorCorrectionLevel,
+        color: { dark: colorDark, light: colorLight },
+        width: size
+      });
+      el.box.innerHTML = ensureXMLHeader(rawSVG);
+      const svgEl = el.box.querySelector('svg');
+
+      // viewBox e escala
+      const vbAttr = svgEl.getAttribute('viewBox');
+      let vbX=0, vbY=0, vbW=size, vbH=size;
+      if (vbAttr) {
+        const p = vbAttr.split(/\s+/).map(Number);
+        if (p.length === 4) [vbX, vbY, vbW, vbH] = p;
+      } else {
+        svgEl.setAttribute('viewBox', `0 0 ${size} ${size}`);
+        vbW = size; vbH = size;
+      }
+      const widthAttr = parseFloat(svgEl.getAttribute('width')) || size;
+      const heightAttr = parseFloat(svgEl.getAttribute('height')) || size;
+      const vbScaleX = vbW / widthAttr;
+      const vbScaleY = vbH / heightAttr;
+      const vbScale = (vbScaleX + vbScaleY) / 2;
+
+      // Grupo raiz para podermos clipar tudo
+      const existingChildren = Array.from(svgEl.childNodes).filter(n => n.nodeType === 1);
+      const rootGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
+      rootGroup.setAttribute('id', 'qr-root');
+      existingChildren.forEach(ch => rootGroup.appendChild(ch));
+      svgEl.textContent = '';
+      svgEl.appendChild(rootGroup);
+
+      // 2) Clip arredondando a imagem inteira (outer radius)
+      const outerRadiusPx = parseFloat(el.outerRadius.value || 0);
+      if (outerRadiusPx > 0) {
+        const radOuterVb = outerRadiusPx * vbScale;
+        const defsOuter = document.createElementNS('http://www.w3.org/2000/svg','defs');
+        const outerClip = document.createElementNS('http://www.w3.org/2000/svg','clipPath');
+        const outerId = 'outerClip-' + Math.random().toString(36).slice(2);
+        outerClip.setAttribute('id', outerId);
+        const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        rect.setAttribute('x', String(vbX));
+        rect.setAttribute('y', String(vbY));
+        rect.setAttribute('width', String(vbW));
+        rect.setAttribute('height', String(vbH));
+        rect.setAttribute('rx', String(radOuterVb));
+        outerClip.appendChild(rect);
+        defsOuter.appendChild(outerClip);
+        svgEl.appendChild(defsOuter);
+        rootGroup.setAttribute('clip-path', `url(#${outerId})`);
+      }
+
+      // 3) Logo + fundo + clipping do logo
+      if (logo.img && logo.dataURL) {
+        const side = Math.min(vbW, vbH);
+        const percent = parseInt(el.logoSize.value, 10);
+        const logoSide = Math.round(side * (percent/100));
+
+        const padVb = (parseFloat(el.logoPad.value || 0)) * vbScale;
+        const radBgVb = (parseFloat(el.logoRadius.value || 0)) * vbScale;
+        const radImgVb = (parseFloat(el.logoImgRadius.value || 0)) * vbScale;
+
+        const showBg = el.logoBgEnable.checked;
+        const bgColor = el.logoBg.value || '#ffffff';
+
+        const cx = vbX + vbW/2;
+        const cy = vbY + vbH/2;
+
+        // defs + clipPath para o logo arredondado
+        const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+        const clip = document.createElementNS('http://www.w3.org/2000/svg','clipPath');
+        const clipId = 'logoClip-' + Math.random().toString(36).slice(2);
+        clip.setAttribute('id', clipId);
+        const clipRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        clipRect.setAttribute('x', String(cx - logoSide/2));
+        clipRect.setAttribute('y', String(cy - logoSide/2));
+        clipRect.setAttribute('width', String(logoSide));
+        clipRect.setAttribute('height', String(logoSide));
+        clipRect.setAttribute('rx', String(radImgVb));
+        clip.appendChild(clipRect);
+        defs.appendChild(clip);
+        svgEl.appendChild(defs);
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('id','logo-layer');
+
+        if (showBg) {
+          const bgRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+          bgRect.setAttribute('x', String(cx - (logoSide/2) - padVb));
+          bgRect.setAttribute('y', String(cy - (logoSide/2) - padVb));
+          bgRect.setAttribute('width', String(logoSide + padVb*2));
+          bgRect.setAttribute('height', String(logoSide + padVb*2));
+          bgRect.setAttribute('rx', String(radBgVb));
+          bgRect.setAttribute('fill', bgColor);
+          g.appendChild(bgRect);
+        }
+
+        const imgEl = document.createElementNS('http://www.w3.org/2000/svg','image');
+        imgEl.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href', logo.dataURL);
+        imgEl.setAttribute('x', String(cx - logoSide/2));
+        imgEl.setAttribute('y', String(cy - logoSide/2));
+        imgEl.setAttribute('width', String(logoSide));
+        imgEl.setAttribute('height', String(logoSide));
+        imgEl.setAttribute('preserveAspectRatio','xMidYMid meet');
+        imgEl.setAttribute('clip-path', `url(#${clipId})`);
+        g.appendChild(imgEl);
+
+        rootGroup.appendChild(g);
+      }
+
+      lastSVG = serializeCurrentSVG();
+
+      // 4) PNG com outer radius + logo
+      const baseCanvas = document.createElement('canvas');
+      await QRCode.toCanvas(baseCanvas, text, {
+        margin,
+        errorCorrectionLevel,
+        color: { dark: colorDark, light: colorLight },
+        width: size
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      ctx.save();
+      const outerRadiusPxClamped = parseFloat(el.outerRadius.value || 0);
+      if (outerRadiusPxClamped > 0) {
+        drawRoundedRect(ctx, 0, 0, size, size, outerRadiusPxClamped);
+        ctx.clip();
+      }
+      ctx.drawImage(baseCanvas, 0, 0);
+
+      if (logo.img && logo.dataURL) {
+        const percent = parseInt(el.logoSize.value, 10);
+        const logoSide = Math.round(size * (percent/100));
+        const padPx = parseFloat(el.logoPad.value || 0);
+        const radBgPx = parseFloat(el.logoRadius.value || 0);
+        const radImgPx = parseFloat(el.logoImgRadius.value || 0);
+        const showBg = el.logoBgEnable.checked;
+        const bgColor = el.logoBg.value || '#ffffff';
+
+        const x = (size - logoSide) / 2;
+        const y = (size - logoSide) / 2;
+
+        if (showBg) {
+          ctx.save();
+          drawRoundedRect(ctx, x - padPx, y - padPx, logoSide + padPx*2, logoSide + padPx*2, radBgPx);
+          ctx.fillStyle = bgColor;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.save();
+        drawRoundedRect(ctx, x, y, logoSide, logoSide, radImgPx);
+        ctx.clip();
+        await imgReady(logo.img);
+        ctx.drawImage(logo.img, x, y, logoSide, logoSide);
+        ctx.restore();
+      }
+
+      ctx.restore();
+
+      lastPNGDataURL = canvas.toDataURL('image/png');
+      el.downloadSvg.disabled = false;
+      el.downloadPng.disabled = false;
+      el.copyPng.disabled = false;
+    }
+
+    const renderQRDebounced = debounce(()=>{ renderQR().catch(console.error); }, 120);
+
+    // Upload do logo
+    el.logoFile.addEventListener('change', async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) { logo = { dataURL:null, img:null }; renderQRDebounced(); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataURL = reader.result;
+        const img = new Image();
+        img.onload = () => { logo = { dataURL, img }; renderQRDebounced(); };
+        img.src = dataURL;
+      };
+      reader.readAsDataURL(f);
+    });
+
+    // Remover logo
+    el.clearLogo.addEventListener('click', () => {
+      el.logoFile.value = '';
+      logo = { dataURL:null, img:null };
+      renderQRDebounced();
+    });
+
+    // Atualizações em tempo real
+    [
+      el.text, el.size, el.margin, el.fg, el.bg,
+      el.logoPad, el.logoRadius, el.logoBg,
+      el.logoImgRadius, el.outerRadius
+    ].forEach(inp => {
+      inp.addEventListener('input', renderQRDebounced);
+    });
+    el.ecLevel.addEventListener('change', renderQRDebounced);
+    el.logoSize.addEventListener('input', () => {
+      el.logoSizeLabel.textContent = el.logoSize.value + '%';
+      renderQRDebounced();
+    });
+    el.logoBgEnable.addEventListener('change', renderQRDebounced);
+
+    // Downloads
+    el.downloadSvg.addEventListener('click', () => {
+      if (!lastSVG) return;
+      const blob = new Blob([lastSVG], { type: 'image/svg+xml;charset=UTF-8' });
+      download('qrcode.svg', blob);
+    });
+    el.downloadPng.addEventListener('click', () => {
+      if (!lastPNGDataURL) return;
+      download('qrcode.png', lastPNGDataURL);
+    });
+
+    // Copiar PNG para área de transferência
+    el.copyPng.addEventListener('click', async () => {
+      if (!lastPNGDataURL) return;
+      if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+        alert('Copiar imagem não é suportado neste navegador. Use o download em PNG.');
+        return;
+      }
+      try {
+        const res = await fetch(lastPNGDataURL);
+        const blob = await res.blob();
+        const item = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([item]);
+        // opcional: feedback visual simples
+        el.copyPng.textContent = 'Copiado!';
+        setTimeout(() => { el.copyPng.textContent = 'Copiar imagem (PNG)'; }, 1200);
+      } catch (err) {
+        console.error(err);
+        alert('Não foi possível copiar a imagem. Verifique permissões do navegador.');
+      }
+    });
+
+    // Primeira renderização
+    renderQR().catch(console.error);
+  </script>
+</body>
+</html>
